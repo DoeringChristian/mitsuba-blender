@@ -259,6 +259,9 @@ def convert_mix_materials_cycles(export_ctx, current_node):#TODO: test and fix t
     else:#one bsdf, one emitter
         raise NotImplementedError("Mixing a BSDF and an emitter is not supported. Consider using an Add shader instead.")
 
+def convert_normal_materials_cycles(export_ctx, current_node):
+    ...
+
 def convert_principled_materials_cycles(export_ctx, current_node):
     params = {}
 
@@ -343,6 +346,14 @@ def cycles_material_to_dict(export_ctx, node):
 
     if node.type in cycles_converters:
         params = cycles_converters[node.type](export_ctx, node)
+        if "Normal" in node.inputs and node.inputs["Normal"].is_linked:
+            params = {
+                "type": "normalmap",
+                "normalmap": convert_float_texture_node(
+                    export_ctx, node.inputs["Normal"]
+                ),
+                "bsdf": params,
+            }
     else:
         raise NotImplementedError("Node type: %s is not supported in Mitsuba." % node.type)
 
