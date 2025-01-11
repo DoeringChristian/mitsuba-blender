@@ -34,7 +34,7 @@ def convert_float_texture_node(export_ctx, socket):
             and node.space == "TANGENT"
             and "Color" in node.inputs
             and node.inputs["Color"].is_linked
-                and not node.inputs["Strength"].is_linked
+            and not node.inputs["Strength"].is_linked
         ):
             # print(f"{node.inputs['Strength'].default_value == 1.0 }")
             params = convert_float_texture_node(export_ctx, node.inputs["Color"])
