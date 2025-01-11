@@ -29,6 +29,15 @@ def convert_float_texture_node(export_ctx, socket):
 
         if node.type == "TEX_IMAGE":
             params = export_texture_node(export_ctx, node)
+        elif (
+            node.type == "NORMAL_MAP"
+            and node.space == "TANGENT"
+            and "Color" in node.inputs
+            and node.inputs["Color"].is_linked
+                and not node.inputs["Strength"].is_linked
+        ):
+            # print(f"{node.inputs['Strength'].default_value == 1.0 }")
+            params = convert_float_texture_node(export_ctx, node.inputs["Color"])
         else:
             raise NotImplementedError( "Node type %s is not supported. Only texture nodes are supported for float inputs" % node.type)
 
@@ -341,19 +350,23 @@ cycles_converters = {
     'ADD_SHADER': convert_add_materials_cycles,
 }
 
+def add_normal_map(export_ctx, node, params):
+    if "Normal" in node.inputs and node.inputs["Normal"].is_linked:
+        params = {
+            "type": "normalmap",
+            "normalmap": convert_float_texture_node(
+                export_ctx, node.inputs["Normal"]
+            ),
+            "bsdf": params,
+        }
+    return params
+
 def cycles_material_to_dict(export_ctx, node):
     ''' Converting one material from Blender to Mitsuba dict'''
 
     if node.type in cycles_converters:
         params = cycles_converters[node.type](export_ctx, node)
-        if "Normal" in node.inputs and node.inputs["Normal"].is_linked:
-            params = {
-                "type": "normalmap",
-                "normalmap": convert_float_texture_node(
-                    export_ctx, node.inputs["Normal"]
-                ),
-                "bsdf": params,
-            }
+        params = add_normal_map(export_ctx, node, params)
     else:
         raise NotImplementedError("Node type: %s is not supported in Mitsuba." % node.type)
 
