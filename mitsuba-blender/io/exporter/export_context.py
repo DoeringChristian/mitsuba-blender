@@ -23,7 +23,8 @@ convert_format = {
     'CINEON': 'EXR',
     'DPX': 'EXR',
     'TIFF': 'PNG',
-    'IRIS': 'PNG'
+    'IRIS': 'PNG',
+    "DDS": "PNG"
 }
 
 class ExportedMaterialsCache:
